@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสุ่มสายการแข่งขันกีฬา</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Floating particles background -->
+    <div class="particles" id="particles"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo">
+                <i class="bi bi-trophy-fill text-warning"></i>
+                <h1>ระบบสุ่มสายการแข่งขันกีฬา</h1>
+                <div class="ms-4 d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-success" id="saveDataBtn"><i class="bi bi-save"></i>
+                        บันทึก</button>
+                    <button class="btn btn-sm btn-outline-danger" id="resetDataBtn"><i
+                            class="bi bi-arrow-counterclockwise"></i> รีเซ็ต</button>
+                </div>
+            </div>
+            <nav class="tabs">
+                <button class="tab-btn active" data-target="tab-color">
+                    <i class="bi bi-palette-fill"></i> 1. สุ่มแบ่งสี
+                </button>
+                <button class="tab-btn" data-target="tab-seed">
+                    <i class="bi bi-diagram-3-fill"></i> 2. สุ่มสายและตารางการแข่งขัน
+                </button>
+                <button class="tab-btn" data-target="tab-summary">
+                    <i class="bi bi-file-earmark-bar-graph"></i> 3. สรุปผลรวม
+                </button>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <!-- Tab 1: Color Allocation -->
+            <section id="tab-color" class="tab-pane active">
+
+
+                <div class="wheels-layout">
+                    <!-- Left Wheel: Major -->
+                    <div class="wheel-box glass-card">
+                        <h2><i class="bi bi-building"></i> สาขาวิชา/ทีม</h2>
+                        <div class="wheel-container">
+                            <div class="wheel-pointer"></div>
+                            <canvas id="t1MajorCanvas" width="400" height="400"></canvas>
+                        </div>
+                        <button class="spin-btn" id="spinT1MajorBtn">
+                            <span>สุ่มสาขาวิชา/ทีม</span>
+                        </button>
+                        <div class="edit-section mt-4">
+                            <label class="form-label text-muted">แก้ไขรายชื่อทีม:</label>
+                            <div class="input-slots" id="t1MajorsInput">
+                                <input type="text" class="custom-input" value="ทีมที่ 1">
+                                <input type="text" class="custom-input" value="ทีมที่ 2">
+                                <input type="text" class="custom-input" value="ทีมที่ 3">
+                                <input type="text" class="custom-input" value="ทีมที่ 4">
+                                <input type="text" class="custom-input" value="ทีมที่ 5">
+                                <input type="text" class="custom-input" value="ทีมที่ 6">
+                            </div>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn-action flex-grow-1" id="updateT1MajorsBtn">อัปเดตรายชื่อ</button>
+                                <button class="btn-action flex-grow-1" id="shuffleT1MajorsBtn"><i
+                                        class="bi bi-shuffle"></i> สลับตำแหน่ง</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Wheel: Color -->
+                    <div class="wheel-box glass-card">
+                        <h2><i class="bi bi-paint-bucket"></i> สีประจำทีม</h2>
+                        <div class="wheel-container">
+                            <div class="wheel-pointer"></div>
+                            <canvas id="t1ColorCanvas" width="400" height="400"></canvas>
+                        </div>
+                        <button class="spin-btn" id="spinT1ColorBtn" disabled>
+                            <span>สุ่มสีประจำทีม</span>
+                        </button>
+                        <div class="edit-section mt-4">
+                            <label class="form-label text-muted">แก้ไขรายชื่อสี:</label>
+                            <div class="input-slots" id="t1ColorsInput">
+                                <input type="text" class="custom-input" value="สีแดง">
+                                <input type="text" class="custom-input" value="สีฟ้า">
+                                <input type="text" class="custom-input" value="สีเขียว">
+                                <input type="text" class="custom-input" value="สีเหลือง">
+                                <input type="text" class="custom-input" value="สีม่วง">
+                                <input type="text" class="custom-input" value="สีส้ม">
+                            </div>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn-action flex-grow-1" id="updateT1ColorsBtn">อัปเดตรายชื่อ</button>
+                                <button class="btn-action flex-grow-1" id="shuffleT1ColorsBtn"><i
+                                        class="bi bi-shuffle"></i> สลับตำแหน่ง</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Allocation Summary -->
+                <div class="summary-section glass-card mt-4">
+                    <h3><i class="bi bi-list-columns-reverse"></i> สรุปผลการแบ่งสี</h3>
+                    <div class="table-responsive">
+                        <table class="table table-custom text-center mb-0" id="colorSummaryTable">
+                            <thead>
+                                <tr>
+                                    <th>สาขาวิชา/ทีม</th>
+                                    <th>สีที่ได้รับ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rows injected via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 2: Bracket Seeding -->
+            <section id="tab-seed" class="tab-pane">
+
+                <!-- Sport Selection -->
+                <div class="glass-card mb-4">
+                    <h3 class="mb-3"><i class="bi bi-controller"></i> ตั้งค่าการแข่งขัน</h3>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label text-muted">ชนิดกีฬา (Sport Name):</label>
+                            <select class="form-select custom-input mb-0" id="t2SportName">
+                                <option value="" disabled selected>เลือกชนิดกีฬา...</option>
+                                <!-- Injected via JS -->
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted">ประเภทกีฬา (Category):</label>
+                            <select class="form-select custom-input mb-0" id="t2SportCategory" disabled>
+                                <option value="" disabled selected>เลือกประเภทกีฬา...</option>
+                                <!-- Injected via JS -->
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted">วันที่แข่งขัน (Date):</label>
+                            <select class="form-select custom-input mb-0" id="t2SportDate">
+                                <option value="" disabled selected>เลือกวันที่แข่งขัน...</option>
+                                <option value="4 พฤศจิกายน 2569">4 พฤศจิกายน 2569</option>
+                                <option value="5 พฤศจิกายน 2569">5 พฤศจิกายน 2569</option>
+                                <option value="6 พฤศจิกายน 2569 (รอบรองชนะเลิศ)">6 พฤศจิกายน 2569 (รอบรองชนะเลิศ)
+                                </option>
+                                <option value="7 พฤศจิกายน 2569 (รอบชิงชนะเลิศ)">7 พฤศจิกายน 2569 (รอบชิงชนะเลิศ)
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="wheels-layout">
+                    <!-- Left Wheel: Major -->
+                    <div class="wheel-box glass-card">
+                        <h2><i class="bi bi-building"></i> สาขาวิชา/ทีม</h2>
+                        <div class="wheel-container">
+                            <div class="wheel-pointer"></div>
+                            <canvas id="t2MajorCanvas" width="400" height="400"></canvas>
+                        </div>
+                        <button class="spin-btn" id="spinT2MajorBtn">
+                            <span>สุ่มสาขาวิชา/ทีม</span>
+                        </button>
+                        <div class="edit-section mt-4">
+                            <label class="form-label text-muted">รายชื่อทีม:</label>
+                            <div class="input-slots" id="t2MajorsInput">
+                                <input type="text" class="custom-input" value="ทีมที่ 1">
+                                <input type="text" class="custom-input" value="ทีมที่ 2">
+                                <input type="text" class="custom-input" value="ทีมที่ 3">
+                                <input type="text" class="custom-input" value="ทีมที่ 4">
+                                <input type="text" class="custom-input" value="ทีมที่ 5">
+                                <input type="text" class="custom-input" value="ทีมที่ 6">
+                            </div>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn-action flex-grow-1" id="updateT2MajorsBtn">อัปเดตรายชื่อ</button>
+                                <button class="btn-action flex-grow-1" id="shuffleT2MajorsBtn"><i
+                                        class="bi bi-shuffle"></i> สลับตำแหน่ง</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Wheel: Seed -->
+                    <div class="wheel-box glass-card">
+                        <h2><i class="bi bi-123"></i> ลำดับทีม</h2>
+                        <div class="wheel-container">
+                            <div class="wheel-pointer"></div>
+                            <canvas id="t2SeedCanvas" width="400" height="400"></canvas>
+                        </div>
+                        <button class="spin-btn" id="spinT2SeedBtn" disabled>
+                            <span>สุ่มสายการแข่งขัน</span>
+                        </button>
+                        <div class="edit-section mt-4">
+                            <label class="form-label text-muted">แก้ไขสายการแข่งขัน:</label>
+                            <div class="input-slots" id="t2SeedsInput">
+                                <input type="text" class="custom-input" value="1">
+                                <input type="text" class="custom-input" value="2">
+                                <input type="text" class="custom-input" value="3">
+                                <input type="text" class="custom-input" value="4">
+                                <input type="text" class="custom-input" value="5">
+                                <input type="text" class="custom-input" value="6">
+                            </div>
+                            <div class="d-flex gap-2 mt-2">
+                                <button class="btn-action flex-grow-1" id="updateT2SeedsBtn">อัปเดตรายชื่อ</button>
+                                <button class="btn-action flex-grow-1" id="shuffleT2SeedsBtn"><i
+                                        class="bi bi-shuffle"></i> สลับตำแหน่ง</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tournament Bracket Section -->
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 40px 0;">
+                <h3 class="mb-3 text-center" id="bracketTitle"><i class="bi bi-trophy text-warning"></i>
+                    ตารางสายการแข่งขัน</h3>
+
+                <div class="bracket-wrapper glass-card">
+                    <div class="bracket">
+                        <!-- Quarter Finals -->
+                        <div class="round round-1">
+                            <div class="round-title" style="line-height: 1.4;">รอบคัดเลือก<br><span
+                                    style="font-size: 0.7em; opacity: 0.7; font-weight: normal;">4-5 พ.ย. 2569</span>
+                            </div>
+                            <div class="matchup empty"></div>
+                            <div class="matchup">
+                                <div class="team" id="m1-t1" data-match="1" data-slot="1">Seed 2</div>
+                                <div class="team" id="m1-t2" data-match="1" data-slot="2">Seed 3</div>
+                            </div>
+                            <div class="matchup empty"></div>
+                            <div class="matchup">
+                                <div class="team" id="m2-t1" data-match="2" data-slot="1">Seed 4</div>
+                                <div class="team" id="m2-t2" data-match="2" data-slot="2">Seed 5</div>
+                            </div>
+                        </div>
+
+                        <!-- Semi Finals -->
+                        <div class="round round-2">
+                            <div class="round-title" style="line-height: 1.4;">รอบรองชนะเลิศ<br><span
+                                    style="font-size: 0.7em; opacity: 0.7; font-weight: normal;">6 พ.ย. 2569</span>
+                            </div>
+                            <div class="matchup">
+                                <div class="team" id="m3-t1" data-match="3" data-slot="1">สายที่ 1 (ผ่านเข้ารอบ)</div>
+                                <div class="team" id="m3-t2" data-match="3" data-slot="2">ผู้ชนะแมตช์ 1</div>
+                            </div>
+                            <div class="matchup">
+                                <div class="team" id="m4-t1" data-match="4" data-slot="1">สายที่ 6 (ผ่านเข้ารอบ)</div>
+                                <div class="team" id="m4-t2" data-match="4" data-slot="2">ผู้ชนะแมตช์ 2</div>
+                            </div>
+                        </div>
+
+                        <!-- Final -->
+                        <div class="round round-3">
+                            <div class="round-title text-success" style="line-height: 1.4;">รอบชิงชนะเลิศ<br><span
+                                    style="font-size: 0.7em; opacity: 0.7; font-weight: normal;">7 พ.ย. 2569</span>
+                            </div>
+                            <div class="matchup final-match">
+                                <div class="team" id="m5-t1" data-match="5" data-slot="1">ผู้ชนะแมตช์ 3</div>
+                                <div class="team" id="m5-t2" data-match="5" data-slot="2">ผู้ชนะแมตช์ 4</div>
+                            </div>
+                        </div>
+
+                        <!-- Champion -->
+                        <div class="round round-4 champion-round">
+                            <div class="round-title text-warning">ทีมชนะเลิศ</div>
+                            <div class="matchup">
+                                <div class="team champion" id="champion" style="color: #fbbf24;">รอผลการแข่งขัน</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 3: Final Summary -->
+            <section id="tab-summary" class="tab-pane">
+
+                <!-- Section A: Search by Major -->
+                <div class="glass-card mb-4">
+                    <h3 class="mb-3"><i class="bi bi-search"></i> ค้นหาข้อมูลตามสาขาวิชา</h3>
+                    <div class="row g-3">
+                        <div class="col-md-9">
+                            <input type="text" id="searchMajorInput" class="form-control custom-input"
+                                placeholder="พิมพ์ชื่อสาขา หรือ ชื่อทีม (เช่น วิทยาการคอมพิวเตอร์ หรือ ทีมที่ 2) เพื่อค้นหา...">
+                        </div>
+                        <div class="col-md-3">
+                            <button id="searchMajorBtn" class="btn btn-primary w-100"
+                                style="height: 100%; min-height: 45px;"><i class="bi bi-search"></i> ค้นหา</button>
+                        </div>
+                    </div>
+                    <div id="majorSearchResult" class="mt-4" style="display: none;">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Section B: Tournament Schedule -->
+                <div class="glass-card mb-4">
+                    <h3 class="mb-3"><i class="bi bi-calendar-event"></i> ตารางการแข่งขัน</h3>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label class="form-label text-muted">วันที่แข่งขัน:</label>
+                            <select id="filterDate" class="form-select custom-input">
+                                <option value="">วันที่ทั้งหมด</option>
+                                <option value="4 พฤศจิกายน 2569">4 พฤศจิกายน 2569</option>
+                                <option value="5 พฤศจิกายน 2569">5 พฤศจิกายน 2569</option>
+                                <option value="6 พฤศจิกายน 2569 (รอบรองชนะเลิศ)">6 พฤศจิกายน 2569 (รอบรองชนะเลิศ)
+                                </option>
+                                <option value="7 พฤศจิกายน 2569 (รอบชิงชนะเลิศ)">7 พฤศจิกายน 2569 (รอบชิงชนะเลิศ)
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted">ชนิดกีฬา:</label>
+                            <select id="filterSport" class="form-select custom-input">
+                                <option value="">ทั้งหมด</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-muted">ประเภทกีฬา:</label>
+                            <select id="filterCategory" class="form-select custom-input" disabled>
+                                <option value="">ทั้งหมด</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button id="searchScheduleBtn" class="btn btn-primary w-100" style="min-height: 45px;"><i
+                                    class="bi bi-search"></i> ค้นหาตาราง</button>
+                        </div>
+                    </div>
+                    <div id="scheduleResultContainer">
+                        <!-- Injected via JS -->
+                        <div class="text-center text-muted py-5" id="scheduleEmptyState">
+                            <i class="bi bi-calendar-check fs-1 mb-3 d-block"></i>
+                            <p id="scheduleEmptyText">กรุณากดปุ่ม "ค้นหาตาราง" เพื่อแสดงข้อมูล</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Result Modal -->
+    <div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content glass-card border-0">
+                <div class="modal-body text-center p-5 relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                        data-bs-dismiss="modal"></button>
+                    <div class="trophy-icon mb-3">
+                        <i class="bi bi-stars text-warning"></i>
+                    </div>
+                    <h2 class="display-6 fw-bold mb-3 text-white">ผลลัพธ์!</h2>
+                    <h3 id="modalResultMessage" class="text-white fw-bold mb-4">Major A gets Red!</h3>
+                    <button type="button" class="btn-action px-5 py-2" data-bs-dismiss="modal">ตกลง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Modal -->
+    <div class="modal fade" id="saveModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card border-0" style="border-top: 4px solid #10b981 !important;">
+                <div class="modal-body text-center p-5 relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                        data-bs-dismiss="modal"></button>
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3 text-white">Saved Successfully!</h3>
+                    <p class="text-muted mb-4">
+                        บันทึกข้อมูลและเซฟความคืบหน้าเรียบร้อยแล้ว<br>สามารถกดบันทึกระหว่างสุ่มได้ตลอดเวลา</p>
+                    <button type="button" class="btn btn-success px-5 py-2 rounded-pill w-100 fw-bold"
+                        data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Modal -->
+    <div class="modal fade" id="resetModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card border-0" style="border-top: 4px solid #ef4444 !important;">
+                <div class="modal-body text-center p-5 relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                        data-bs-dismiss="modal"></button>
+                    <div class="mb-3">
+                        <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="fw-bold mb-3 text-white">Reset Data?</h3>
+                    <p class="text-muted mb-4">ต้องการรีเซ็ตข้อมูลทั้งหมดกลับเป็นค่าเริ่มต้นหรือไม่?<br><span
+                            class="text-danger">การกระทำนี้จะลบข้อมูลที่บันทึกไว้ทั้งหมด ไม่สามารถกู้คืนได้</span></p>
+                    <div class="d-flex gap-3">
+                        <button type="button" class="btn btn-secondary px-4 py-2 rounded-pill flex-grow-1"
+                            data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger px-4 py-2 rounded-pill flex-grow-1 fw-bold"
+                            id="confirmResetBtn">Reset All</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card border-0" style="border-top: 4px solid #3b82f6 !important;">
+                <div class="modal-body p-4 relative">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3"
+                        data-bs-dismiss="modal"></button>
+                    <h3 class="fw-bold mb-4 text-white text-center"><i class="bi bi-info-circle text-primary"></i>
+                        ข้อมูลการแข่งขัน</h3>
+
+                    <div class="info-details text-start mb-4 fs-5"
+                        style="background: rgba(0,0,0,0.2); padding: 1.5rem; border-radius: 10px;">
+                        <p class="mb-2"><strong class="text-info">ทีม:</strong> <span id="infoModalTeamName"
+                                class="text-white"></span></p>
+                        <p class="mb-2"><strong class="text-info">สาขา:</strong> <span id="infoModalMajor"
+                                class="text-white" style="font-size: 0.9em;"></span></p>
+                        <hr style="border-color: rgba(255,255,255,0.1);">
+                        <p class="mb-2"><strong class="text-warning"><i class="bi bi-calendar-event"></i>
+                                วันที่แข่งขัน:</strong> <span id="infoModalDate"
+                                class="text-white">รอระบุจากฝ่ายจัดฯ</span></p>
+                        <p class="mb-2"><strong class="text-warning"><i class="bi bi-clock"></i> เวลา:</strong> <span
+                                id="infoModalTime" class="text-white">รอระบุจากฝ่ายจัดฯ</span></p>
+                        <p class="mb-0"><strong class="text-warning"><i class="bi bi-geo-alt"></i> สถานที่:</strong>
+                            <span id="infoModalLocation" class="text-white">รอระบุจากฝ่ายจัดฯ</span></p>
+                    </div>
+
+                    <button type="button" class="btn btn-primary px-5 py-2 rounded-pill w-100 fw-bold"
+                        data-bs-dismiss="modal">ปิดหน้าต่าง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
